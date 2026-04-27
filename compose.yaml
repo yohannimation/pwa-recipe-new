@@ -44,8 +44,25 @@ services:
     networks:
       - recipe-network
 
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: recipe-pgadmin
+    ports:
+      - '5050:80'
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD}
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - recipe-network
+
 volumes:
   postgres_data:
+  pgadmin_data:
 
 networks:
   recipe-network:
