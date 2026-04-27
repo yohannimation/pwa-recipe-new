@@ -7,6 +7,12 @@ import { AppService } from './app.service';
 
 import { buildTypeOrmConfig } from './config/typeorm.config';
 
+import { UsersModule } from './module/users/users.module';
+import { CategoriesModule } from './module/categories/categories.module';
+import { RecipesModule } from './module/recipes/recipes.module';
+import { IngredientsModule } from './module/ingredients/ingredients.module';
+import { StepsModule } from './module/steps/steps.module';
+
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
@@ -16,6 +22,11 @@ import { buildTypeOrmConfig } from './config/typeorm.config';
       useFactory: (configService: ConfigService) =>
         buildTypeOrmConfig(configService),
     }),
+    UsersModule,
+    CategoriesModule,
+    RecipesModule,
+    IngredientsModule,
+    StepsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
