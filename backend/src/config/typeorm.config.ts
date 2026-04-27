@@ -4,7 +4,7 @@ import { ConfigService } from '@nestjs/config';
 export const buildTypeOrmConfig = (
   configService: ConfigService,
 ): TypeOrmModuleOptions => ({
-  type: 'mysql',
+  type: 'postgres',
   host: configService.get('DB_HOST') ?? 'localhost',
   port: configService.get('DB_PORT') ?? 3306,
   username: configService.get('DB_USER') ?? 'root',
