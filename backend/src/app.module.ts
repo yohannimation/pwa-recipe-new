@@ -7,6 +7,7 @@ import { AppService } from './app.service';
 
 import { buildTypeOrmConfig } from './config/typeorm.config';
 
+import { AuthModule } from './module/auth/auth.module';
 import { UsersModule } from './module/users/users.module';
 import { CategoriesModule } from './module/categories/categories.module';
 import { RecipesModule } from './module/recipes/recipes.module';
@@ -22,6 +23,7 @@ import { StepsModule } from './module/steps/steps.module';
       useFactory: (configService: ConfigService) =>
         buildTypeOrmConfig(configService),
     }),
+    AuthModule,
     UsersModule,
     CategoriesModule,
     RecipesModule,
