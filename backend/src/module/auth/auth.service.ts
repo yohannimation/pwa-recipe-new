@@ -1,7 +1,7 @@
 import {
   Injectable,
-  BadRequestException,
   UnauthorizedException,
+  ConflictException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -25,7 +25,7 @@ export class AuthService {
       where: { username },
     });
     if (existingUser) {
-      throw new BadRequestException('Username already exists');
+      throw new ConflictException('Username already exists');
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);

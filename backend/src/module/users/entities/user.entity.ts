@@ -8,6 +8,7 @@ import {
 } from 'typeorm';
 import { Role } from '../../../common/enums/role.enum';
 import { Recipe } from '../../recipes/entities/recipe.entity';
+import { Exclude } from 'class-transformer';
 
 @Entity('users')
 export class User {
@@ -18,6 +19,7 @@ export class User {
   username: string;
 
   @Column()
+  @Exclude()
   password: string;
 
   @Column({

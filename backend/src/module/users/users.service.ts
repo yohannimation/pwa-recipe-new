@@ -1,10 +1,15 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { User } from './entities/user.entity';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { plainToInstance } from 'class-transformer';
 
 @Injectable()
 export class UsersService {
@@ -13,40 +18,47 @@ export class UsersService {
   ) {}
 
   async create(createUserDto: CreateUserDto): Promise<User> {
-    const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
-    const user = this.userRepository.create({
-      ...createUserDto,
-      password: hashedPassword,
+    const user = await this.userRepository.findOne({
+      where: { username: createUserDto.username },
     });
+    if (user) throw new ConflictException('Username already exists');
 
-    return await this.userRepository.save(user);
+    createUserDto.password = await this.hashPassword(createUserDto.password);
+
+    const savedUser = await this.userRepository.save(createUserDto);
+    return plainToInstance(User, savedUser);
   }
 
   async findAll(): Promise<User[]> {
-    return await this.userRepository.find();
+    const users = await this.userRepository.find();
+    return plainToInstance(User, users);
   }
 
   async findOne(id: string): Promise<User> {
     const user = await this.userRepository.findOne({ where: { id } });
     if (!user) throw new NotFoundException(`User with ID ${id} not found`);
 
-    return user;
+    return plainToInstance(User, user);
   }
 
   async update(id: string, updateUserDto: UpdateUserDto): Promise<User> {
     const user = await this.findOne(id);
 
-    if (updateUserDto.password) {
-      updateUserDto.password = await bcrypt.hash(updateUserDto.password, 10);
-    }
+    if (updateUserDto.password)
+      updateUserDto.password = await this.hashPassword(updateUserDto.password);
 
     const updatedUser = this.userRepository.merge(user, updateUserDto);
-
-    return await this.userRepository.save(updatedUser);
+    const savedUser = await this.userRepository.save(updatedUser);
+    return plainToInstance(User, savedUser);
   }
 
   async remove(id: string): Promise<void> {
     const user = await this.findOne(id);
     await this.userRepository.remove(user);
+  }
+
+  async hashPassword(password: string): Promise<string> {
+    const salt = await bcrypt.genSalt(10);
+    return bcrypt.hash(password, salt);
   }
 }
