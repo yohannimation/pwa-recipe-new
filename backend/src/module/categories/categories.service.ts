@@ -17,7 +17,12 @@ export class CategoriesService {
   }
 
   async findAll(): Promise<Category[]> {
-    return await this.categoryRepository.find();
+    const categories = await this.categoryRepository.find({
+      relations: ['children'],
+    });
+
+    // Return only root categories (not the parents)
+    return categories.filter((category) => category.idParent === null);
   }
 
   async findById(id: number): Promise<Category> {

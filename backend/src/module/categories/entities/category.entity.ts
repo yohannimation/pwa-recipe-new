@@ -7,6 +7,7 @@ import {
   ManyToOne,
   OneToMany,
   ManyToMany,
+  JoinColumn,
 } from 'typeorm';
 import { Recipe } from '../../recipes/entities/recipe.entity';
 
@@ -21,7 +22,16 @@ export class Category {
   @Column({ nullable: true })
   idParent: number;
 
-  @ManyToOne(() => Category, (category) => category.children)
+  @CreateDateColumn()
+  createdAt: Date;
+
+  @UpdateDateColumn()
+  updatedAt: Date;
+
+  @ManyToOne(() => Category, (category) => category.children, {
+    nullable: true,
+  })
+  @JoinColumn({ name: 'idParent' })
   parent: Category;
 
   @OneToMany(() => Category, (category) => category.parent)
@@ -29,10 +39,4 @@ export class Category {
 
   @ManyToMany(() => Recipe, (recipe) => recipe.categories)
   recipes: Recipe[];
-
-  @CreateDateColumn()
-  createdAt: Date;
-
-  @UpdateDateColumn()
-  updatedAt: Date;
 }
