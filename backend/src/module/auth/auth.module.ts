@@ -9,11 +9,13 @@ import { AuthService } from './auth.service';
 import { JwtStrategy } from './jwt.strategy';
 
 import type { StringValue } from 'ms';
+import { UsersModule } from '../users/users.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([User]),
     PassportModule,
+    UsersModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
