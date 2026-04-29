@@ -8,5 +8,6 @@ import { Step } from './entities/step.entity';
   imports: [TypeOrmModule.forFeature([Step])],
   controllers: [StepsController],
   providers: [StepsService],
+  exports: [StepsService, TypeOrmModule],
 })
 export class StepsModule {}
