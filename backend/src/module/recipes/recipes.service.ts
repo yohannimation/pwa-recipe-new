@@ -94,8 +94,29 @@ export class RecipesService {
     // Ingredients
     // TODO add ingredients
 
-    // Steps - Cascade update and orphanedRowAction : 'delete'
+    // Steps deletion
     if (updateRecipeDto.steps) {
+      const updatedStepIds = updateRecipeDto.steps
+        .filter((stepDto) => stepDto.id)
+        .map((stepDto) => stepDto.id);
+
+      const orphanedSteps = await this.stepRepository.findBy({
+        recipe: { id },
+      });
+
+      if (updatedStepIds.length > 0) {
+        const toDelete = orphanedSteps.filter(
+          (step) => !updatedStepIds.includes(step.id),
+        );
+        if (toDelete.length > 0) {
+          await this.stepRepository.remove(toDelete);
+        }
+      } else {
+        if (orphanedSteps.length > 0) {
+          await this.stepRepository.remove(orphanedSteps);
+        }
+      }
+
       updatedRecipe.steps = updateRecipeDto.steps.map((stepDto) => {
         if (stepDto.id) {
           // Step update
