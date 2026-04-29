@@ -6,6 +6,7 @@ import { CreateRecipeDto } from './dto/create-recipe.dto';
 import { UpdateRecipeDto } from './dto/update-recipe.dto';
 import { User } from '../users/entities/user.entity';
 import { Category } from '../categories/entities/category.entity';
+import { Step } from '../steps/entities/step.entity';
 
 @Injectable()
 export class RecipesService {
@@ -14,6 +15,8 @@ export class RecipesService {
     private readonly recipeRepository: Repository<Recipe>,
     @InjectRepository(Category)
     private readonly categoryRepository: Repository<Category>,
+    @InjectRepository(Step)
+    private readonly stepRepository: Repository<Step>,
   ) {}
 
   async create(createRecipeDto: CreateRecipeDto, user: User) {
@@ -33,8 +36,12 @@ export class RecipesService {
     // Ingredients
     // TODO add ingredients
 
-    // Steps
-    // TODO add steps
+    // Steps - Cascade insertion
+    if (createRecipeDto.steps && createRecipeDto.steps.length > 0) {
+      recipe.steps = createRecipeDto.steps.map((stepDto) =>
+        this.stepRepository.create(stepDto),
+      );
+    }
 
     const savedRecipe = await this.recipeRepository.save(recipe);
     return this.findOne(+savedRecipe.id);
@@ -78,19 +85,36 @@ export class RecipesService {
 
     // Categories
     if (updateRecipeDto.categoryIds && updateRecipeDto.categoryIds.length > 0) {
-      const categories = await this.categoryRepository.findByIds(
-        updateRecipeDto.categoryIds,
-      );
+      const categories = await this.categoryRepository.findBy({
+        id: In(updateRecipeDto.categoryIds),
+      });
       updatedRecipe.categories = categories;
     }
 
     // Ingredients
     // TODO add ingredients
 
-    // Steps
-    // TODO add steps
+    // Steps - Cascade update and orphanedRowAction : 'delete'
+    if (updateRecipeDto.steps) {
+      updatedRecipe.steps = updateRecipeDto.steps.map((stepDto) => {
+        if (stepDto.id) {
+          // Step update
+          return this.stepRepository.merge(
+            { id: stepDto.id, recipe } as Step,
+            stepDto,
+          );
+        } else {
+          // Step creation
+          return this.stepRepository.create({
+            ...stepDto,
+            recipe,
+          });
+        }
+      });
+    }
 
-    return await this.recipeRepository.save(updatedRecipe);
+    await this.recipeRepository.save(updatedRecipe);
+    return this.findOne(id);
   }
 
   async remove(id: number) {

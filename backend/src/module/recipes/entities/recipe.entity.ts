@@ -50,6 +50,9 @@ export class Recipe {
   @OneToMany(() => Ingredient, (ingredient) => ingredient.recipe)
   ingredients: Ingredient[];
 
-  @OneToMany(() => Step, (step) => step.recipe)
+  @OneToMany(() => Step, (step) => step.recipe, {
+    cascade: true,
+    orphanedRowAction: 'delete',
+  })
   steps: Step[];
 }
