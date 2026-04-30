@@ -16,9 +16,12 @@ export class CategoriesService {
     return await this.categoryRepository.save(createCategoryDto);
   }
 
-  async findAll(): Promise<Category[]> {
+  async findAll(query: { name?: string }): Promise<Category[]> {
+    const { name } = query;
+
     const categories = await this.categoryRepository.find({
       relations: ['children'],
+      where: name ? { name: Like(`%${name}%`) } : {},
     });
 
     // Return only root categories (not the parents)
@@ -31,14 +34,6 @@ export class CategoriesService {
       throw new NotFoundException(`Category with ID ${id} not found`);
 
     return category;
-  }
-
-  async findByName(name: string): Promise<Category[]> {
-    return await this.categoryRepository.find({
-      where: {
-        name: Like(`%${name}%`),
-      },
-    });
   }
 
   async update(id: number, updateCategoryDto: UpdateCategoryDto) {

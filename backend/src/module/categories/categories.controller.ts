@@ -29,13 +29,8 @@ export class CategoriesController {
   }
 
   @Get()
-  findAll() {
-    return this.categoriesService.findAll();
-  }
-
-  @Get('search')
-  searchByName(@Query('name') name: string) {
-    return this.categoriesService.findByName(name);
+  findAll(@Query('name') name?: string) {
+    return this.categoriesService.findAll({ name });
   }
 
   @Get(':id')
