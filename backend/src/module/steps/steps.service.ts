@@ -3,7 +3,7 @@ import { CreateStepDto } from './dto/create-step.dto';
 import { UpdateStepDto } from './dto/update-step.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Step } from './entities/step.entity';
-import { Repository, In } from 'typeorm';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class StepsService {
@@ -14,10 +14,6 @@ export class StepsService {
 
   async create(createStepDto: CreateStepDto) {
     return await this.stepRepository.save(createStepDto);
-  }
-
-  async createMultiple(createStepDtos: CreateStepDto[]) {
-    return await this.stepRepository.save(createStepDtos);
   }
 
   async findAll() {
@@ -41,36 +37,5 @@ export class StepsService {
   async remove(id: number) {
     const step = await this.findOne(id);
     await this.stepRepository.remove(step);
-  }
-
-  async updateMultiple(
-    recipeId: number,
-    updateStepDtos: UpdateStepDto[],
-  ): Promise<Step[]> {
-    const updates = await Promise.all(
-      updateStepDtos.map(async (dto) => {
-        const step = await this.stepRepository.findOneBy({
-          id: dto.id,
-          recipe: { id: recipeId },
-        });
-        if (!step) {
-          throw new NotFoundException(
-            `Step with ID ${dto.id} not found for recipe ${recipeId}`,
-          );
-        }
-        const updatedStep = this.stepRepository.merge(step, dto);
-        return await this.stepRepository.save(updatedStep);
-      }),
-    );
-    return updates;
-  }
-
-  async deleteMultiple(ids: number[]): Promise<void> {
-    if (ids.length === 0) return;
-    await this.stepRepository.delete({ id: In(ids) });
-  }
-
-  async deleteByRecipeId(recipeId: number): Promise<void> {
-    await this.stepRepository.delete({ recipe: { id: recipeId } });
   }
 }
