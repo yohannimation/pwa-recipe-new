@@ -91,6 +91,7 @@ export class RecipesService {
 
   async update(id: number, updateRecipeDto: UpdateRecipeDto) {
     const recipe = await this.findOne(id);
+    if (!recipe) throw new NotFoundException(`Recipe with ID ${id} not found`);
 
     const updatedRecipe = this.recipeRepository.merge(recipe, updateRecipeDto);
 
