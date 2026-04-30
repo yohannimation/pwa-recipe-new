@@ -1,12 +1,19 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, In } from 'typeorm';
+
+// Entities
+import { Category } from '../categories/entities/category.entity';
 import { Recipe } from './entities/recipe.entity';
+import { Step } from '../steps/entities/step.entity';
+import { User } from '../users/entities/user.entity';
+
+// DTOs
 import { CreateRecipeDto } from './dto/create-recipe.dto';
 import { UpdateRecipeDto } from './dto/update-recipe.dto';
-import { User } from '../users/entities/user.entity';
-import { Category } from '../categories/entities/category.entity';
-import { Step } from '../steps/entities/step.entity';
+
+// Services
+import { UsersService } from '../users/users.service';
 
 @Injectable()
 export class RecipesService {
@@ -17,9 +24,13 @@ export class RecipesService {
     private readonly categoryRepository: Repository<Category>,
     @InjectRepository(Step)
     private readonly stepRepository: Repository<Step>,
+    private readonly usersService: UsersService,
   ) {}
 
-  async create(createRecipeDto: CreateRecipeDto, user: User) {
+  async create(createRecipeDto: CreateRecipeDto, currentUser: User) {
+    // Fetch user entity to create relation between recipe - user
+    const user = await this.usersService.findOne(currentUser.id);
+
     const recipe = this.recipeRepository.create({
       ...createRecipeDto,
       user,
