@@ -16,5 +16,5 @@ export class CreateCategoryDto {
 
   @IsOptional()
   @IsInt()
-  parentId?: number;
+  idParent?: number;
 }
