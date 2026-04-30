@@ -3,7 +3,7 @@ import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
 import { Category } from './entities/category.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Like, Repository } from 'typeorm';
+import { IsNull, Like, Repository } from 'typeorm';
 
 @Injectable()
 export class CategoriesService {
@@ -19,13 +19,16 @@ export class CategoriesService {
   async findAll(query: { name?: string }): Promise<Category[]> {
     const { name } = query;
 
-    const categories = await this.categoryRepository.find({
-      relations: ['children'],
-      where: name ? { name: Like(`%${name}%`) } : {},
-    });
+    if (name)
+      return await this.categoryRepository.find({
+        relations: ['children'],
+        where: { name: Like(`%${name}%`) },
+      });
 
-    // Return only root categories (not the parents)
-    return categories.filter((category) => category.idParent === null);
+    return await this.categoryRepository.find({
+      relations: ['children'],
+      where: { idParent: IsNull() },
+    });
   }
 
   async findById(id: number): Promise<Category> {
