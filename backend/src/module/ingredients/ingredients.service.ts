@@ -1,26 +1,51 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateIngredientDto } from './dto/create-ingredient.dto';
 import { UpdateIngredientDto } from './dto/update-ingredient.dto';
+import { Ingredient } from './entities/ingredient.entity';
+import { Repository } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
+import { SpoonacularService } from './spoonacular.service';
 
 @Injectable()
 export class IngredientsService {
-  create(createIngredientDto: CreateIngredientDto) {
-    return 'This action adds a new ingredient';
+  constructor(
+    @InjectRepository(Ingredient)
+    private readonly ingredientRepository: Repository<Ingredient>,
+    private readonly spoonacularService: SpoonacularService,
+  ) {}
+
+  async create(createIngredientDto: CreateIngredientDto) {
+    return await this.ingredientRepository.save(createIngredientDto);
   }
 
-  findAll() {
-    return `This action returns all ingredients`;
+  async findAll() {
+    return await this.ingredientRepository.find();
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} ingredient`;
+  async findOne(id: number) {
+    const ingredient = await this.ingredientRepository.findOneBy({ id });
+    if (!ingredient)
+      throw new NotFoundException(`Ingredient with ID ${id} not found`);
+
+    return ingredient;
   }
 
-  update(id: number, updateIngredientDto: UpdateIngredientDto) {
-    return `This action updates a #${id} ingredient`;
+  async update(id: number, updateIngredientDto: UpdateIngredientDto) {
+    const ingredient = await this.findOne(id);
+    const updatedIngredient = this.ingredientRepository.merge(
+      ingredient,
+      updateIngredientDto,
+    );
+
+    return await this.ingredientRepository.save(updatedIngredient);
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} ingredient`;
+  async remove(id: number) {
+    const ingredient = await this.findOne(id);
+    await this.ingredientRepository.remove(ingredient);
+  }
+
+  async searchFromFatSecret(query: string) {
+    return this.spoonacularService.searchIngredients(query);
   }
 }

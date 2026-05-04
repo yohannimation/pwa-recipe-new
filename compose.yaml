@@ -16,6 +16,7 @@ services:
       DB_NAME: ${DB_NAME}
       JWT_SECRET: ${JWT_SECRET}
       JWT_EXPIRES_IN: ${JWT_EXPIRES_IN}
+      SPOONACULAR_API_KEY: ${SPOONACULAR_API_KEY}
     volumes:
       - ./backend:/app
       - /app/node_modules

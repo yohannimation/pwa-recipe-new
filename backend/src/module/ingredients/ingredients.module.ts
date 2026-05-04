@@ -3,10 +3,12 @@ import { IngredientsService } from './ingredients.service';
 import { IngredientsController } from './ingredients.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Ingredient } from './entities/ingredient.entity';
+import { SpoonacularService } from './spoonacular.service';
 
 @Module({
   imports: [TypeOrmModule.forFeature([Ingredient])],
   controllers: [IngredientsController],
-  providers: [IngredientsService],
+  providers: [IngredientsService, SpoonacularService],
+  exports: [SpoonacularService],
 })
 export class IngredientsModule {}
