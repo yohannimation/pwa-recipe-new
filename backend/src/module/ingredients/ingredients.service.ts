@@ -30,10 +30,6 @@ export class IngredientsService {
     return ingredient;
   }
 
-  async searchFromFatSecret(query: string) {
-    return this.spoonacularService.searchIngredients(query);
-  }
-
   async update(id: number, updateIngredientDto: UpdateIngredientDto) {
     const ingredient = await this.findOne(id);
     const updatedIngredient = this.ingredientRepository.merge(
