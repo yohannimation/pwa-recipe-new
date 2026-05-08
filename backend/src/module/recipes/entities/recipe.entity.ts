@@ -44,7 +44,17 @@ export class Recipe {
   user: User;
 
   @ManyToMany(() => Category, (category) => category.recipes)
-  @JoinTable()
+  @JoinTable({
+    name: 'recipes_categories',
+    joinColumn: {
+      name: 'recipeId',
+      referencedColumnName: 'id',
+    },
+    inverseJoinColumn: {
+      name: 'categoryId',
+      referencedColumnName: 'id',
+    },
+  })
   categories: Category[];
 
   @OneToMany(() => Ingredient, (ingredient) => ingredient.recipe, {
