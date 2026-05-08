@@ -1,35 +1,15 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Patch,
-  Param,
-  Delete,
-  Query,
-  BadRequestException,
-} from '@nestjs/common';
-import { IngredientsService } from './ingredients.service';
-import { CreateIngredientDto } from './dto/create-ingredient.dto';
-import { UpdateIngredientDto } from './dto/update-ingredient.dto';
+import { Controller, Get, Query, BadRequestException } from '@nestjs/common';
 import { SpoonacularService } from './spoonacular.service';
+
+/**
+ * |=======================================================================================|
+ * |   CREATE, UPDATE, DELETE are does automatically when a recipe is CREATED or UPDATED   |
+ * |=======================================================================================|
+ */
 
 @Controller('ingredients')
 export class IngredientsController {
-  constructor(
-    private readonly ingredientsService: IngredientsService,
-    private readonly spoonacularService: SpoonacularService,
-  ) {}
-
-  @Post()
-  create(@Body() createIngredientDto: CreateIngredientDto) {
-    return this.ingredientsService.create(createIngredientDto);
-  }
-
-  // @Get()
-  // findAll() {
-  //   return this.ingredientsService.findAll();
-  // }
+  constructor(private readonly spoonacularService: SpoonacularService) {}
 
   @Get()
   async searchIngredients(@Query('name') name: string) {
@@ -37,23 +17,5 @@ export class IngredientsController {
       throw new BadRequestException('name query parameter is required');
     }
     return this.spoonacularService.searchIngredients(name);
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.ingredientsService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(
-    @Param('id') id: string,
-    @Body() updateIngredientDto: UpdateIngredientDto,
-  ) {
-    return this.ingredientsService.update(+id, updateIngredientDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.ingredientsService.remove(+id);
   }
 }
