@@ -9,6 +9,6 @@ import { SpoonacularService } from './spoonacular.service';
   imports: [TypeOrmModule.forFeature([Ingredient])],
   controllers: [IngredientsController],
   providers: [IngredientsService, SpoonacularService],
-  exports: [SpoonacularService],
+  exports: [IngredientsService, SpoonacularService],
 })
 export class IngredientsModule {}

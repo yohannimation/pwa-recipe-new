@@ -3,6 +3,7 @@ import { BaseCreateRecipeDto } from './create-recipe.dto';
 import { IsArray, IsOptional, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
 import { UpdateStepDto } from 'src/module/steps/dto/update-step.dto';
+import { UpdateIngredientDto } from 'src/module/ingredients/dto/update-ingredient.dto';
 
 export class UpdateRecipeDto extends PartialType(BaseCreateRecipeDto) {
   @IsArray()
@@ -10,4 +11,10 @@ export class UpdateRecipeDto extends PartialType(BaseCreateRecipeDto) {
   @ValidateNested({ each: true })
   @Type(() => UpdateStepDto)
   steps?: UpdateStepDto[];
+
+  @IsArray()
+  @IsOptional()
+  @ValidateNested({ each: true })
+  @Type(() => UpdateIngredientDto)
+  ingredients?: UpdateIngredientDto[];
 }

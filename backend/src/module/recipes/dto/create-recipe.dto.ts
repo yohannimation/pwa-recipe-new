@@ -9,6 +9,7 @@ import {
 import { IsNotEmpty } from 'class-validator';
 import { Type } from 'class-transformer';
 import { CreateStepDto } from '../../steps/dto/create-step.dto';
+import { CreateIngredientDto } from '../../ingredients/dto/create-ingredient.dto';
 
 export class BaseCreateRecipeDto {
   @IsString()
@@ -43,4 +44,10 @@ export class CreateRecipeDto extends BaseCreateRecipeDto {
   @ValidateNested({ each: true })
   @Type(() => CreateStepDto)
   steps?: CreateStepDto[];
+
+  @IsArray()
+  @IsOptional()
+  @ValidateNested({ each: true })
+  @Type(() => CreateIngredientDto)
+  ingredients?: CreateIngredientDto[];
 }

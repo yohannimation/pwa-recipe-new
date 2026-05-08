@@ -17,12 +17,20 @@ export class Ingredient {
   idApi: string;
 
   @Column()
+  name: string;
+
+  @Column({ nullable: true })
+  imgUrl: string;
+
+  @Column()
   quantity: string;
 
   @Column()
   unit: string;
 
-  @ManyToOne(() => Recipe, (recipe) => recipe.ingredients)
+  @ManyToOne(() => Recipe, (recipe) => recipe.ingredients, {
+    onDelete: 'CASCADE',
+  })
   recipe: Recipe;
 
   @CreateDateColumn()

@@ -6,6 +6,7 @@ import { Repository, In } from 'typeorm';
 import { Category } from '../categories/entities/category.entity';
 import { Recipe } from './entities/recipe.entity';
 import { Step } from '../steps/entities/step.entity';
+import { Ingredient } from '../ingredients/entities/ingredient.entity';
 import { User } from '../users/entities/user.entity';
 
 // DTOs
@@ -15,6 +16,7 @@ import { UpdateRecipeDto } from './dto/update-recipe.dto';
 // Services
 import { UsersService } from '../users/users.service';
 import { StepsService } from '../steps/steps.service';
+import { IngredientsService } from '../ingredients/ingredients.service';
 
 @Injectable()
 export class RecipesService {
@@ -25,8 +27,12 @@ export class RecipesService {
     private readonly categoryRepository: Repository<Category>,
     @InjectRepository(Step)
     private readonly stepRepository: Repository<Step>,
+    @InjectRepository(Ingredient)
+    private readonly ingredientRepository: Repository<Ingredient>,
+
     private readonly usersService: UsersService,
     private readonly stepsService: StepsService,
+    private readonly ingredientsService: IngredientsService,
   ) {}
 
   async create(createRecipeDto: CreateRecipeDto, currentUser: User) {
@@ -46,8 +52,12 @@ export class RecipesService {
       recipe.categories = categories;
     }
 
-    // Ingredients
-    // TODO add ingredients
+    // Ingredients - Cascade insertion
+    if (createRecipeDto.ingredients && createRecipeDto.ingredients.length > 0) {
+      recipe.ingredients = createRecipeDto.ingredients.map((ingredientDto) =>
+        this.ingredientRepository.create(ingredientDto),
+      );
+    }
 
     // Steps - Cascade insertion
     if (createRecipeDto.steps && createRecipeDto.steps.length > 0) {
@@ -104,8 +114,14 @@ export class RecipesService {
       updatedRecipe.categories = categories;
     }
 
-    // Ingredients
-    // TODO add ingredients
+    // Ingredients update
+    if (updateRecipeDto.ingredients) {
+      updatedRecipe.ingredients =
+        await this.ingredientsService.updateIngredientsByRecipe(
+          id,
+          updateRecipeDto.ingredients,
+        );
+    }
 
     // Steps update
     if (updateRecipeDto.steps) {

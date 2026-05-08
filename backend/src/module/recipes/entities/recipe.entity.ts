@@ -47,7 +47,10 @@ export class Recipe {
   @JoinTable()
   categories: Category[];
 
-  @OneToMany(() => Ingredient, (ingredient) => ingredient.recipe)
+  @OneToMany(() => Ingredient, (ingredient) => ingredient.recipe, {
+    cascade: true,
+    orphanedRowAction: 'delete',
+  })
   ingredients: Ingredient[];
 
   @OneToMany(() => Step, (step) => step.recipe, {
