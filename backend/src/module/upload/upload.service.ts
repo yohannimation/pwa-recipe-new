@@ -1,9 +1,9 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
 import { MultipartFile } from '@fastify/multipart';
 import { randomUUID } from 'crypto';
-import { createWriteStream, mkdirSync, unlink } from 'fs';
-import { join, extname } from 'path';
-import { pipeline } from 'stream/promises';
+import { mkdirSync, unlink } from 'fs';
+import { join } from 'path';
+import sharp from 'sharp';
 
 @Injectable()
 export class UploadService {
@@ -11,8 +11,6 @@ export class UploadService {
 
   constructor() {
     this.uploadDir = './src/uploads/recipes';
-
-    // Create folder if not exist
     mkdirSync(this.uploadDir, { recursive: true });
   }
 
@@ -27,16 +25,25 @@ export class UploadService {
   }
 
   async saveImage(file: MultipartFile): Promise<string> {
-    const ext = extname(file.filename) || '.jpg';
-    const filename = `${randomUUID()}${ext}`;
-    const filepath = join(this.uploadDir, filename);
+    const buffer = await file.toBuffer();
 
-    await pipeline(file.file, createWriteStream(filepath));
-
-    // Check if the stream has been truncated (size limit exceeded)
+    // Check if the buffer has been truncated (size limit exceeded)
     if (file.file.truncated) {
       throw new BadRequestException('File too large (max 2 MB)');
     }
+
+    const filename = `${randomUUID()}.webp`;
+    const filepath = join(this.uploadDir, filename);
+
+    await sharp(buffer)
+      .resize({
+        width: 800,
+        height: 600,
+        fit: 'inside',
+        withoutEnlargement: true,
+      })
+      .webp({ quality: 80 })
+      .toFile(filepath);
 
     return filename;
   }
