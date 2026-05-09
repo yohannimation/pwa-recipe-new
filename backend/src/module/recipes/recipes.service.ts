@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, In } from 'typeorm';
+import { MultipartFile } from '@fastify/multipart';
 
 // Entities
 import { Category } from '../categories/entities/category.entity';
@@ -17,6 +18,7 @@ import { UpdateRecipeDto } from './dto/update-recipe.dto';
 import { UsersService } from '../users/users.service';
 import { StepsService } from '../steps/steps.service';
 import { IngredientsService } from '../ingredients/ingredients.service';
+import { UploadService } from '../upload/upload.service';
 
 @Injectable()
 export class RecipesService {
@@ -33,6 +35,7 @@ export class RecipesService {
     private readonly usersService: UsersService,
     private readonly stepsService: StepsService,
     private readonly ingredientsService: IngredientsService,
+    private readonly uploadService: UploadService,
   ) {}
 
   async create(createRecipeDto: CreateRecipeDto, currentUser: User) {
@@ -138,5 +141,19 @@ export class RecipesService {
   async remove(id: number) {
     const recipe = await this.findOne(id);
     await this.recipeRepository.remove(recipe);
+  }
+
+  async updateImage(id: number, file: MultipartFile): Promise<Recipe> {
+    const recipe = await this.findOne(id);
+
+    this.uploadService.checkFormat(file);
+
+    // Remove old recipe image if exist
+    if (recipe.imageName) this.uploadService.removeImage(recipe.imageName);
+
+    const filename = await this.uploadService.saveImage(file);
+    recipe.imageName = filename;
+
+    return this.recipeRepository.save(recipe);
   }
 }

@@ -9,6 +9,8 @@ import {
   Query,
   UseGuards,
   ForbiddenException,
+  BadRequestException,
+  Req,
 } from '@nestjs/common';
 import { RecipesService } from './recipes.service';
 import { CreateRecipeDto } from './dto/create-recipe.dto';
@@ -19,6 +21,7 @@ import { Roles } from '../../common/decorators/roles.decorator';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { User } from '../users/entities/user.entity';
 import { Role } from '../../common/enums/role.enum';
+import type { FastifyRequest } from 'fastify';
 
 @Controller('recipes')
 export class RecipesController {
@@ -69,5 +72,27 @@ export class RecipesController {
     }
 
     return this.recipesService.remove(+id);
+  }
+
+  @Post(':id/image')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMIN, Role.CHEF)
+  async uploadImage(
+    @Param('id') id: number,
+    @Req() req: FastifyRequest,
+    @CurrentUser() user: User,
+  ) {
+    const file = await req.file();
+    if (!file) throw new BadRequestException('No file received');
+
+    const recipe = await this.recipesService.findOne(+id);
+
+    if (user.role !== Role.ADMIN && recipe.user.id !== user.id) {
+      throw new ForbiddenException(
+        'You can only upload image for your own recipes',
+      );
+    }
+
+    return this.recipesService.updateImage(id, file);
   }
 }

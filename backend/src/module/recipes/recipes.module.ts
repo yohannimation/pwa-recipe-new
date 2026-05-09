@@ -13,6 +13,7 @@ import { Ingredient } from '../ingredients/entities/ingredient.entity';
 import { StepsModule } from '../steps/steps.module';
 import { UsersModule } from '../users/users.module';
 import { IngredientsModule } from '../ingredients/ingredients.module';
+import { UploadModule } from '../upload/upload.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { IngredientsModule } from '../ingredients/ingredients.module';
     StepsModule,
     IngredientsModule,
     UsersModule,
+    UploadModule,
   ],
   controllers: [RecipesController],
   providers: [RecipesService],
