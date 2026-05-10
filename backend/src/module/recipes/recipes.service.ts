@@ -140,6 +140,10 @@ export class RecipesService {
 
   async remove(id: number) {
     const recipe = await this.findOne(id);
+
+    // Remove recipe image if exist
+    if (recipe.imageName) this.uploadService.removeImage(recipe.imageName);
+
     await this.recipeRepository.remove(recipe);
   }
 
