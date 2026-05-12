@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, In } from 'typeorm';
+import { Repository, In, ILike, FindManyOptions } from 'typeorm';
 import { MultipartFile } from '@fastify/multipart';
 
 // Entities
@@ -76,28 +76,33 @@ export class RecipesService {
   async findAll(query: { name?: string; category?: string }) {
     const { name, category } = query;
 
-    const queryBuilder = this.recipeRepository
-      .createQueryBuilder('recipe')
-      .leftJoinAndSelect('recipe.user', 'user')
-      .leftJoinAndSelect('recipe.categories', 'category')
-      .leftJoinAndSelect('recipe.ingredients', 'ingredient')
-      .leftJoinAndSelect('recipe.steps', 'step');
+    const where: FindManyOptions<Recipe>['where'] = {};
 
-    if (name)
-      queryBuilder.andWhere('recipe.name ILIKE :name', { name: `%${name}%` });
+    if (name) where.name = ILike(`%${name}%`);
+    if (category) where.categories = { name: ILike(`%${category}%`) };
 
-    if (category)
-      queryBuilder.andWhere('category.name ILIKE :category', {
-        category: `%${category}%`,
-      });
-
-    return await queryBuilder.getMany();
+    return await this.recipeRepository.find({
+      where,
+      relations: ['user', 'categories', 'ingredients', 'steps'],
+      select: {
+        user: {
+          id: true,
+          username: true,
+        },
+      },
+    });
   }
 
   async findOne(id: number) {
     const recipe = await this.recipeRepository.findOne({
       where: { id },
       relations: ['user', 'categories', 'ingredients', 'steps'],
+      select: {
+        user: {
+          id: true,
+          username: true,
+        },
+      },
     });
     if (!recipe) throw new NotFoundException(`Recipe with ID ${id} not found`);
 
